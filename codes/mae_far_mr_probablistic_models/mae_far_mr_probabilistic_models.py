@@ -20,11 +20,11 @@ from matplotlib.path import Path
 import matplotlib.patches as patches
 import geopandas as gpd
 
-def get_s2s_prob_twice_weekly(yr, data_dir):
+def get_forecast_probabilistic_twice_weekly(yr, model_forecast_dir):
     """
     Loads model precip data for twice-weekly initializations from May to July.
     Filters for Mondays and Thursdays in the specified year.
-    The forecast file is expected to be named as '{year}.nc' in the data_dir with 
+    The forecast file is expected to be named as '{year}.nc' in the model_forecast_dir with 
     variable "tp" being daily accumulated rainfall with dimensions (init_time, lat, lon, step, member).
 
     Parameters:
@@ -34,7 +34,7 @@ def get_s2s_prob_twice_weekly(yr, data_dir):
     p_model: ndarray, precipitation data 
     """
     fname = f'{yr}.nc'
-    file_path = os.path.join(data_dir, fname)
+    file_path = os.path.join(model_forecast_dir, fname)
         
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File not found: {file_path}")
@@ -489,7 +489,7 @@ def compute_onset_metrics_with_windows(onset_df, tolerance_days=3, verification_
     
     return metrics_df, summary_stats
 
-def compute_metrics_multiple_years(years, s2s_data_dir, imd_folder, thres_file, 
+def compute_metrics_multiple_years(years, model_forecast_dir, imd_folder, thres_file, 
                                  tolerance_days=3, verification_window=1, forecast_days=15, 
                                  max_forecast_day=15, mok=True):
     """Compute onset metrics for multiple years."""
@@ -504,7 +504,7 @@ def compute_metrics_multiple_years(years, s2s_data_dir, imd_folder, thres_file,
         print(f"Processing year {year}")
         print(f"{'='*50}")
         
-        p_model = get_s2s_prob_twice_weekly(year, s2s_data_dir)
+        p_model = get_forecast_probabilistic_twice_weekly(year, model_forecast_dir)
         imd = load_imd_rainfall(year, imd_folder)
         onset_da = detect_observed_onset(imd, thres_da, year, mok=mok)
         
@@ -952,7 +952,7 @@ def main():
     
     parser.add_argument('--years', nargs='+', type=int, required=True,
                         help='Years to process (e.g., 2019 2020 2021)')
-    parser.add_argument('--s2s_data_dir', type=str, required=True,
+    parser.add_argument('--model_forecast_dir', type=str, required=True,
                         help='Directory containing S2S model data')
     parser.add_argument('--imd_folder', type=str, required=True,
                         help='Directory containing IMD rainfall data')
@@ -980,7 +980,7 @@ def main():
     args = parser.parse_args()
     
     print(f"Processing years: {args.years}")
-    print(f"S2S data directory: {args.s2s_data_dir}")
+    print(f"S2S data directory: {args.model_forecast_dir}")
     print(f"IMD folder: {args.imd_folder}")
     print(f"Threshold file: {args.thres_file}")
     print(f"Shapefile path: {args.shpfile_path}")
@@ -995,7 +995,7 @@ def main():
     
     # Compute metrics for multiple years
     metrics_df_dict, onset_da_dict = compute_metrics_multiple_years(
-        args.years, args.s2s_data_dir, args.imd_folder, args.thres_file,
+        args.years, args.model_forecast_dir, args.imd_folder, args.thres_file,
         tolerance_days=args.tolerance_days, 
         verification_window=args.verification_window, 
         forecast_days=args.forecast_days,

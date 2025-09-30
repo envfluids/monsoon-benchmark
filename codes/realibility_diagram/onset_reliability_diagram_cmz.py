@@ -3,7 +3,7 @@
 Monsoon Onset Reliability Analysis Script
 
 This script performs reliability analysis for monsoon onset predictions
-using S2S forecast data and IMD observations.
+using model forecast data and IMD observations.
 """
 
 import numpy as np
@@ -17,12 +17,12 @@ import warnings
 from matplotlib.path import Path as MplPath
 import argparse
 
-def get_s2s_prob_twice_weekly(yr, data_dir, file_pattern = '{}.nc'):
+def get_forecast_probabilistic_twice_weekly(yr, model_forecast_dir, file_pattern = '{}.nc'):
     """
     Loads model precip data for twice-weekly initializations from May to July.
     """
     fname = file_pattern.format(yr)
-    file_path = os.path.join(data_dir, fname)
+    file_path = os.path.join(model_forecast_dir, fname)
         
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File not found: {file_path}")
@@ -367,7 +367,7 @@ def points_inside_polygon(polygon_lon, polygon_lat, grid_lons, grid_lats):
     
     return inside_mask, inside_lons, inside_lats
 
-def multi_year_reliability_analysis(years, s2s_data_dir, imd_folder, thres_file, max_forecast_day, day_bins, mok=True, file_pattern='{}.nc'):
+def multi_year_reliability_analysis(years, model_forecast_dir, imd_folder, thres_file, max_forecast_day, day_bins, mok=True, file_pattern='{}.nc'):
     """Main function to perform multi-year reliability analysis."""
     
     print(f"Processing years: {years}")
@@ -403,8 +403,8 @@ def multi_year_reliability_analysis(years, s2s_data_dir, imd_folder, thres_file,
         print(f"{'='*50}")
         
         try:
-            print("Loading S2S model data...")
-            p_model = get_s2s_prob_twice_weekly(year, s2s_data_dir, file_pattern)
+            print("Loading model forecast data...")
+            p_model = get_forecast_probabilistic_twice_weekly(year, model_forecast_dir, file_pattern)
             p_model_slice = p_model.sel(lat=inside_lats, lon=inside_lons)
 
             print("Loading IMD rainfall data...")
@@ -545,13 +545,13 @@ def plot_reliability_diagram(forecast_obs_pairs_multi, years, max_forecast_day, 
 
 def main():
     parser = argparse.ArgumentParser(description='Monsoon Onset Reliability Analysis')
-    parser.add_argument('--s2s_data_dir', required=True, help='Directory containing S2S forecast data')
+    parser.add_argument('--model_forecast_dir', required=True, help='Directory containing model forecast data')
     parser.add_argument('--imd_folder', required=True, help='Directory containing IMD rainfall data')
     parser.add_argument('--thres_file', required=True, help='Path to threshold NetCDF file')
     parser.add_argument('--max_forecast_day', type=int, default=15, help='Maximum forecast day (default: 15)')
     parser.add_argument('--save_path', required=True, help='Directory to save outputs')
     parser.add_argument('--years', nargs='+', type=int, required=True, help='Years to process (e.g., 2019 2020 2021)')
-    parser.add_argument('--file_pattern', default='{}.nc', help='File pattern for S2S data (default: {}.nc)')
+    parser.add_argument('--file_pattern', default='{}.nc', help='File pattern for model forecast data (default: {}.nc)')
     parser.add_argument('--mok', action='store_true', default=True, help='Enable MOK filter (default: True)')
     parser.add_argument('--no-mok', dest='mok', action='store_false', help='Disable MOK filter')
 
@@ -566,7 +566,7 @@ def main():
         raise ValueError("max_forecast_day must be either 15 or 30")
     
     print(f"Starting reliability analysis with parameters:")
-    print(f"S2S data directory: {args.s2s_data_dir}")
+    print(f"Model forecast data directory: {args.model_forecast_dir}")
     print(f"IMD folder: {args.imd_folder}")
     print(f"Threshold file: {args.thres_file}")
     print(f"Max forecast day: {args.max_forecast_day}")
@@ -578,7 +578,7 @@ def main():
     # Run the analysis
     forecast_obs_df = multi_year_reliability_analysis(
         args.years, 
-        args.s2s_data_dir, 
+        args.model_forecast_dir, 
         args.imd_folder, 
         args.thres_file, 
         args.max_forecast_day, 

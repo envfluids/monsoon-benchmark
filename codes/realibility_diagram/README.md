@@ -36,7 +36,7 @@ This tool performs reliability analysis by comparing ensemble forecast probabili
 ```bash
 # With MOK filter (default)
 python onset_reliability_diagram_cmz.py \
-    --s2s_data_dir "../../model_forecast_data/ngcm51/climatology/tp_2p0" \
+    --model_forecast_dir "../../model_forecast_data/ngcm51/climatology/tp_2p0" \
     --imd_folder "../../imd_rainfall_data/2p0" \
     --thres_file "../../imd_onset_threshold/mwset2x2.nc4" \
     --max_forecast_day 15 \
@@ -47,7 +47,7 @@ python onset_reliability_diagram_cmz.py \
 
 # Without MOK filter
 python onset_reliability_diagram_cmz.py \
-    --s2s_data_dir "../../model_forecast_data/ngcm51/climatology/tp_2p0" \
+    --model_forecast_dir "../../model_forecast_data/ngcm51/climatology/tp_2p0" \
     --imd_folder "../../imd_rainfall_data/2p0" \
     --thres_file "../../imd_onset_threshold/mwset2x2.nc4" \
     --max_forecast_day 15 \
@@ -61,7 +61,7 @@ python onset_reliability_diagram_cmz.py \
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `--s2s_data_dir` | str | Yes | - | Directory containing model forecast data files  |
+| `--model_forecast_dir` | str | Yes | - | Directory containing model forecast data files  |
 | `--imd_folder` | str | Yes | - | Directory containing IMD rainfall NetCDF files |
 | `--thres_file` | str | Yes | - | Path to monsoon onset threshold NetCDF file |
 | `--max_forecast_day` | int | No | 15 | Maximum forecast day (15 or 30) |

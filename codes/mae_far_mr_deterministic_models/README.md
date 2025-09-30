@@ -44,7 +44,7 @@ pip install numpy xarray pandas matplotlib geopandas argparse pathlib
 | Argument | Description |
 |----------|-------------|
 | `--years` | Years to process (e.g., `2019 2020 2021`) |
-| `--s2s_data_dir` | Directory containing model forecast data  files in the right format (should have the same resolution as IMD data)|
+| `--model_forecast_dir` | Directory containing model forecast data  files in the right format (should have the same resolution as IMD data)|
 | `--imd_folder` | Directory containing IMD rainfall data files|
 | `--thres_file` | Path to threshold NetCDF file (should have the same resolution as IMD data)|
 | `--shpfile_path` | Path to India shapefile |
@@ -133,7 +133,7 @@ The script automatically detects grid resolution and defines CMZ polygon:
 ```bash
 python mae_far_mr_deterministic_models.py \
     --years 2019 2020 2021 \
-    --s2s_data_dir ../../model_forecast_data/aifs/daily_0z/tp_2p0_lsm \
+    --model_forecast_dir ../../model_forecast_data/aifs/daily_0z/tp_2p0_lsm \
     --imd_folder ../../imd_rainfall_data/2p0 \
     --thres_file ../../imd_onset_threshold/mwset2x2.nc4 \
     --shpfile_path ../../ind_map_shpfile/india_shapefile.shp \
@@ -149,7 +149,7 @@ python mae_far_mr_deterministic_models.py \
 ```bash
 python mae_far_mr_deterministic_models.py \
     --years 2019 2020 2021 2022 2023 2024 \
-    --s2s_data_dir ../../model_forecast_data/aifs/daily_0z/tp_2p0_lsm \
+    --model_forecast_dir ../../model_forecast_data/aifs/daily_0z/tp_2p0_lsm \
     --imd_folder ../../imd_rainfall_data/2p0 \
     --thres_file ../../imd_onset_threshold/mwset2x2.nc4 \
     --shpfile_path ../../ind_map_shpfile/india_shapefile.shp \
@@ -165,7 +165,7 @@ python mae_far_mr_deterministic_models.py \
 ```bash
 python mae_far_mr_deterministic_models.py \
     --years 2019 2020 2021 \
-    --s2s_data_dir ../../model_forecast_data/aifs/daily_0z/tp_2p0_lsm \
+    --model_forecast_dir ../../model_forecast_data/aifs/daily_0z/tp_2p0_lsm \
     --imd_folder ../../imd_rainfall_data/2p0 \
     --thres_file ../../imd_onset_threshold/mwset2x2.nc4 \
     --shpfile_path ../../ind_map_shpfile/india_shapefile.shp \
@@ -182,7 +182,7 @@ The script provides comprehensive progress information:
 
 ```
 Processing years: [2019, 2020, 2021]
-S2S data directory: /path/to/data
+Model forecast data directory: /path/to/data
 ...
 ==================================================
 Processing year 2019
