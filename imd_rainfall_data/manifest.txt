@@ -1,3 +1,4 @@
+Updated: 2025-09-30T15:16:53Z
 imd_rainfall_data
 ├── 0p25
 │   ├── 1901.nc
