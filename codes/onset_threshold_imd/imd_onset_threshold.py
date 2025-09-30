@@ -259,17 +259,17 @@ def process_rainfall_data(input_dir, output_dir):
     filen = "*.nc"
     
     try:
-        dat = xr.open_mfdataset(os.path.join(input_dir, filen))
+        dat = xr.open_mfdataset(
+            os.path.join(input_dir, filen),
+            preprocess=standardize_coordinate_names
+        )
     except Exception as e:
         print(f"Error loading NetCDF files: {e}")
         raise
     
     print(f"Original dataset coordinates: {list(dat.coords.keys())}")
     print(f"Original dataset variables: {list(dat.data_vars.keys())}")
-    
-    # Standardize coordinate names
-    dat = standardize_coordinate_names(dat)
-    
+        
     # Detect rainfall variable
     rainfall_var = detect_rainfall_variable(dat)
     
