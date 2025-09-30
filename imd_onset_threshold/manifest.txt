@@ -1,0 +1,7 @@
+imd_onset_threshold
+├── manifest.txt
+├── mwset1x1.nc4
+├── mwset2x2.nc4
+└── mwset4x4.nc4
+
+1 directory, 4 files
