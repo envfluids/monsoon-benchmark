@@ -1023,8 +1023,6 @@ def main():
     # Save to NetCDF
     ds.to_netcdf(args.output_file)
     print(f"\nSpatial metrics saved to: {args.output_file}")
-
-    print(f"\nSpatial metrics saved to: {args.output_file}")
     
     # Generate and save plot if plot_dir is specified
     if args.plot_dir:

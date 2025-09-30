@@ -36,22 +36,22 @@ This tool performs reliability analysis by comparing ensemble forecast probabili
 ```bash
 # With MOK filter (default)
 python onset_reliability_diagram_cmz.py \
-    --s2s_data_dir "/path/to/s2s/forecast/data" \
-    --imd_folder "/path/to/imd/rainfall/data" \
-    --thres_file "/path/to/threshold/file.nc" \
+    --s2s_data_dir "../../model_forecast_data/ngcm51/climatology/tp_2p0" \
+    --imd_folder "../../imd_rainfall_data/2p0" \
+    --thres_file "../../imd_onset_threshold/mwset2x2.nc4" \
     --max_forecast_day 15 \
-    --save_path "/path/to/output/directory" \
+    --save_path "./output" \
     --years 2019 2020 2021 2022 2023 2024 \
     --file_pattern "tp_2p0_{}.nc" \
     --mok
 
 # Without MOK filter
 python onset_reliability_diagram_cmz.py \
-    --s2s_data_dir "/path/to/s2s/forecast/data" \
-    --imd_folder "/path/to/imd/rainfall/data" \
-    --thres_file "/path/to/threshold/file.nc" \
+    --s2s_data_dir "../../model_forecast_data/ngcm51/climatology/tp_2p0" \
+    --imd_folder "../../imd_rainfall_data/2p0" \
+    --thres_file "../../imd_onset_threshold/mwset2x2.nc4" \
     --max_forecast_day 15 \
-    --save_path "/path/to/output/directory" \
+    --save_path "./output" \
     --years 2019 2020 2021 2022 2023 2024 \
     --file_pattern "tp_2p0_{}.nc" \
     --no-mok

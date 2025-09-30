@@ -133,46 +133,47 @@ The script automatically detects grid resolution and defines CMZ polygon:
 ```bash
 python mae_far_mr_deterministic_models.py \
     --years 2019 2020 2021 \
-    --s2s_data_dir /data/model \
-    --imd_folder /data/imd \
-    --thres_file /data/threshold.nc \
-    --shpfile_path /data/india.shp \
+    --s2s_data_dir ../../model_forecast_data/aifs/daily_0z/tp_2p0_lsm \
+    --imd_folder ../../imd_rainfall_data/2p0 \
+    --thres_file ../../imd_onset_threshold/mwset2x2.nc4 \
+    --shpfile_path ../../ind_map_shpfile/india_shapefile.shp \
     --tolerance_days 3 \
     --verification_window 1 \
     --forecast_days 15 \
     --mok \
-    --output_file results_1-15day_MOK.nc \
-    --plot_dir /output/plots
+    --output_file ./output/results_1-15day_MOK.nc \
+    --plot_dir ./output/plots
 ```
 
 ### Extended 16-30 Day Evaluation
 ```bash
 python mae_far_mr_deterministic_models.py \
     --years 2019 2020 2021 2022 2023 2024 \
-    --s2s_data_dir /data/model \
-    --imd_folder /data/imd \
-    --thres_file /data/threshold.nc \
-    --shpfile_path /data/india.shp \
+    --s2s_data_dir ../../model_forecast_data/aifs/daily_0z/tp_2p0_lsm \
+    --imd_folder ../../imd_rainfall_data/2p0 \
+    --thres_file ../../imd_onset_threshold/mwset2x2.nc4 \
+    --shpfile_path ../../ind_map_shpfile/india_shapefile.shp \
     --tolerance_days 5 \
     --verification_window 16 \
     --forecast_days 30 \
     --mok \
-    --output_file results_16-30day_MOK.nc \
-    --plot_dir /output/plots
+    --output_file ./output/results_16-30day_MOK.nc \
+    --plot_dir ./output/plots
 ```
 
 ### No MOK Filter
 ```bash
 python mae_far_mr_deterministic_models.py \
     --years 2019 2020 2021 \
-    --s2s_data_dir /data/model \
-    --imd_folder /data/imd \
-    --thres_file /data/threshold.nc \
-    --shpfile_path /data/india.shp \
+    --s2s_data_dir ../../model_forecast_data/aifs/daily_0z/tp_2p0_lsm \
+    --imd_folder ../../imd_rainfall_data/2p0 \
+    --thres_file ../../imd_onset_threshold/mwset2x2.nc4 \
+    --shpfile_path ../../ind_map_shpfile/india_shapefile.shp \
     --tolerance_days 3 \
     --verification_window 1 \
     --forecast_days 15 \
-    --output_file results_1-15day_noMOK.nc
+    --output_file ./output/results_1-15day_noMOK.nc \
+    --plot_dir ./output/plots
 ```
 
 ## Console Output

@@ -1,3 +1,5 @@
 imd_onset_threshold/*.nc4
 imd_rainfall_data/*/
 model_forecast_data/*/
+**/output/
+.vscode/

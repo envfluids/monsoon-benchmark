@@ -594,7 +594,10 @@ def main():
         args.max_forecast_day,
         args.save_path
     )
-    
+    if args.mok:
+        mok_suffix = '_mok'
+    else:
+        mok_suffix = '_no_mok'
     # Save reliability DataFrame as CSV
     os.makedirs(args.save_path, exist_ok=True)
     csv_path = os.path.join(args.save_path, f'reliability_results_{args.max_forecast_day}day{mok_suffix}.csv')
