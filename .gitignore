@@ -3,4 +3,4 @@ imd_rainfall_data/*/
 model_forecast_data/*/
 **/output/
 .vscode/
-**/*.ipynb
+*.ipynb
