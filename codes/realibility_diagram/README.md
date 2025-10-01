@@ -18,7 +18,7 @@ This tool performs reliability analysis by comparing ensemble forecast probabili
    - Both the forecast and ground truth (IMD data and threshold) needs to be on the same grid. This generally requires regridding the forecast output to the IMD grid. This can be done using **CDO** : `cdo rempacon,<gridfile.txt> <input_file.nc> <output_file.nc>`  
    - Format: `{year}.nc`
    - Variables: `tp` (total precipitation) daily precip in mm
-   - Dimensions: `init_time/time`:initialization date in datetime64[ns], `day`/`step`: forecast step (0-35 in days) in int64, `lat`, `lon`, `member`:ensemble member number (1,2,3...n, where n is the total number of ensemble members) in int64 
+   - Dimensions: `init_time/time`:initialization date in datetime64[ns], `day`/`step`: forecast step (0-35 in days) in int64, `lat`, `lon`, `number/member`:ensemble member number (1,2,3...n, where n is the total number of ensemble members) in int64 
 
 2. **IMD Rainfall Data**: NetCDF files with observed rainfall
    - Format: `data_{year}.nc` or `{year}.nc`
