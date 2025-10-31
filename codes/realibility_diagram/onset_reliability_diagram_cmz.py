@@ -17,6 +17,7 @@ import warnings
 from matplotlib.path import Path as MplPath
 import argparse
 
+
 def get_forecast_probabilistic_twice_weekly(yr, model_forecast_dir, file_pattern = '{}.nc'):
     """
     Loads model precip data for twice-weekly initializations from May to July.
@@ -44,6 +45,8 @@ def get_forecast_probabilistic_twice_weekly(yr, model_forecast_dir, file_pattern
         ds = ds.rename({'time': 'init_time'})
     if 'number' in ds.dims:
         ds = ds.rename({'number': 'member'})
+    if 'sample' in ds.dims:
+        ds = ds.rename({'sample': 'member'})
     
     # Find common dates between desired dates and available dates
     available_init_times = pd.to_datetime(ds.init_time.values)
@@ -64,8 +67,9 @@ def get_forecast_probabilistic_twice_weekly(yr, model_forecast_dir, file_pattern
     
     if 'day' in ds.dims:        
         ds = ds.rename({'day': 'step'})
-    
-    p_model = ds['tp']  # in mm    
+
+    ds = ds.sel(member =slice(1, 51))  # limit to first 51 members (0-50)
+    p_model = ds['tp']  # in mm
     ds.close()
     return p_model
 
