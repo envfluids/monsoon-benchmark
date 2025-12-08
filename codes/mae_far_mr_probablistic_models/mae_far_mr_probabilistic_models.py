@@ -20,7 +20,7 @@ from matplotlib.path import Path
 import matplotlib.patches as patches
 import geopandas as gpd
 
-def get_forecast_probabilistic_twice_weekly(yr, model_forecast_dir):
+def get_forecast_probabilistic_twice_weekly(yr, model_forecast_dir, mem_num, file_pattern='{}.nc'):
     """
     Loads model precip data for twice-weekly initializations from May to July.
     Filters for Mondays and Thursdays in the specified year.
@@ -33,7 +33,7 @@ def get_forecast_probabilistic_twice_weekly(yr, model_forecast_dir):
     Returns:
     p_model: ndarray, precipitation data 
     """
-    fname = f'{yr}.nc'
+    fname = file_pattern.format(yr)
     file_path = os.path.join(model_forecast_dir, fname)
         
     if not os.path.exists(file_path):
@@ -52,10 +52,15 @@ def get_forecast_probabilistic_twice_weekly(yr, model_forecast_dir):
         
     # Load data using xarray
     ds = xr.open_dataset(file_path)
+    if "total_precipitation_24hr" in ds.data_vars:
+        ds = ds.rename({"total_precipitation_24hr": "tp"}) # For the quantile-mapped variable change the var name from total_precipitation_24hr to tp
+        ds = ds[['tp']]*1000
     if 'time' in ds.dims:
         ds = ds.rename({'time': 'init_time'})
     if 'number' in ds.dims:
         ds = ds.rename({'number': 'member'})
+    if 'sample' in ds.dims:
+        ds = ds.rename({'sample': 'member'})
     # Find common dates between desired dates and available dates
     available_init_times = pd.to_datetime(ds.init_time.values)
     matching_times = available_init_times[available_init_times.isin(filtered_dates_yr)]
@@ -76,7 +81,7 @@ def get_forecast_probabilistic_twice_weekly(yr, model_forecast_dir):
             ds = ds.sel(step=slice(1, None)) 
     if 'day' in ds.dims:        
         ds = ds.rename({'day': 'step'})
-    
+    ds = ds.isel(member =slice(0, mem_num))  # limit to first mem_num members (0-mem_num) [for isel upper bound is exclusive]
     p_model = ds['tp']  # in mm    
     ds.close()
     return p_model
@@ -365,7 +370,7 @@ def compute_mean_onset_for_all_members(p_model, thresh_slice, onset_da, max_fore
     print(f"Ensemble onset rate: {ensemble_onsets_found/valid_inits:.3f}" if valid_inits > 0 else "Ensemble onset rate: 0.000")
     
     if mok:
-        print(f"Note: Only onsets on or after June 2nd were counted due to MOK flag")
+        print(f"Note: Only onsets after June 2nd were counted due to MOK flag")
     
     return onset_df
 
@@ -489,7 +494,7 @@ def compute_onset_metrics_with_windows(onset_df, tolerance_days=3, verification_
     
     return metrics_df, summary_stats
 
-def compute_metrics_multiple_years(years, model_forecast_dir, imd_folder, thres_file, 
+def compute_metrics_multiple_years(years, model_forecast_dir, imd_folder, thres_file, mem_num, file_pattern='{}.nc',
                                  tolerance_days=3, verification_window=1, forecast_days=15, 
                                  max_forecast_day=15, mok=True):
     """Compute onset metrics for multiple years."""
@@ -504,7 +509,7 @@ def compute_metrics_multiple_years(years, model_forecast_dir, imd_folder, thres_
         print(f"Processing year {year}")
         print(f"{'='*50}")
         
-        p_model = get_forecast_probabilistic_twice_weekly(year, model_forecast_dir)
+        p_model = get_forecast_probabilistic_twice_weekly(year, model_forecast_dir, mem_num, file_pattern)
         imd = load_imd_rainfall(year, imd_folder)
         onset_da = detect_observed_onset(imd, thres_da, year, mok=mok)
         
@@ -954,10 +959,14 @@ def main():
                         help='Years to process (e.g., 2019 2020 2021)')
     parser.add_argument('--model_forecast_dir', type=str, required=True,
                         help='Directory containing S2S model data')
+    parser.add_argument('--mem_num', type=int, required=True,
+                        help='Number of ensemble members to use')
     parser.add_argument('--imd_folder', type=str, required=True,
                         help='Directory containing IMD rainfall data')
     parser.add_argument('--thres_file', type=str, required=True,
                         help='Path to threshold NetCDF file')
+    parser.add_argument('--file_pattern', type=str, default='{}.nc',
+                        help='File pattern for forecast data (default: {}.nc)')    
     parser.add_argument('--shpfile_path', type=str, required=True,
                         help='Path to India shapefile')
     parser.add_argument('--tolerance_days', type=int, default=3,
@@ -996,11 +1005,13 @@ def main():
     # Compute metrics for multiple years
     metrics_df_dict, onset_da_dict = compute_metrics_multiple_years(
         args.years, args.model_forecast_dir, args.imd_folder, args.thres_file,
-        tolerance_days=args.tolerance_days, 
+        tolerance_days=args.tolerance_days,
+        mem_num=args.mem_num, 
         verification_window=args.verification_window, 
         forecast_days=args.forecast_days,
         max_forecast_day=args.max_forecast_day, 
-        mok=args.mok
+        mok=args.mok,
+        file_pattern=args.file_pattern
     )
     
     # Create spatial metrics
@@ -1019,6 +1030,7 @@ def main():
     ds.attrs['forecast_days'] = args.forecast_days
     ds.attrs['max_forecast_day'] = args.max_forecast_day
     ds.attrs['mok_filter'] = int(args.mok)  # Convert boolean to integer (0 or 1)
+    
     
     # Save to NetCDF
     ds.to_netcdf(args.output_file)

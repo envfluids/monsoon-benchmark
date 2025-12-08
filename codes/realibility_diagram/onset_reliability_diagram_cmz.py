@@ -18,7 +18,7 @@ from matplotlib.path import Path as MplPath
 import argparse
 
 
-def get_forecast_probabilistic_twice_weekly(yr, model_forecast_dir, file_pattern = '{}.nc'):
+def get_forecast_probabilistic_twice_weekly(yr, model_forecast_dir, mem_num, file_pattern = '{}.nc'):
     """
     Loads model precip data for twice-weekly initializations from May to July.
     """
@@ -41,6 +41,9 @@ def get_forecast_probabilistic_twice_weekly(yr, model_forecast_dir, file_pattern
         
     # Load data using xarray
     ds = xr.open_dataset(file_path)
+    if "total_precipitation_24hr" in ds.data_vars:
+        ds = ds.rename({"total_precipitation_24hr": "tp"}) # For the quantile-mapped variable change the var name from total_precipitation_24hr to tp
+        ds = ds[['tp']]*1000  # Convert from m to mm
     if 'time' in ds.dims:
         ds = ds.rename({'time': 'init_time'})
     if 'number' in ds.dims:
@@ -68,7 +71,7 @@ def get_forecast_probabilistic_twice_weekly(yr, model_forecast_dir, file_pattern
     if 'day' in ds.dims:        
         ds = ds.rename({'day': 'step'})
 
-    ds = ds.sel(member =slice(1, 51))  # limit to first 51 members (0-50)
+    ds = ds.isel(member =slice(0, mem_num))  # limit to first mem_num members (0-mem_num)
     p_model = ds['tp']  # in mm
     ds.close()
     return p_model
@@ -371,7 +374,7 @@ def points_inside_polygon(polygon_lon, polygon_lat, grid_lons, grid_lats):
     
     return inside_mask, inside_lons, inside_lats
 
-def multi_year_reliability_analysis(years, model_forecast_dir, imd_folder, thres_file, max_forecast_day, day_bins, mok=True, file_pattern='{}.nc'):
+def multi_year_reliability_analysis(years, model_forecast_dir, imd_folder, thres_file, mem_num, max_forecast_day, day_bins, mok=True, file_pattern='{}.nc'):
     """Main function to perform multi-year reliability analysis."""
     
     print(f"Processing years: {years}")
@@ -408,7 +411,7 @@ def multi_year_reliability_analysis(years, model_forecast_dir, imd_folder, thres
         
         try:
             print("Loading model forecast data...")
-            p_model = get_forecast_probabilistic_twice_weekly(year, model_forecast_dir, file_pattern)
+            p_model = get_forecast_probabilistic_twice_weekly(year, model_forecast_dir, mem_num, file_pattern)
             p_model_slice = p_model.sel(lat=inside_lats, lon=inside_lons)
 
             print("Loading IMD rainfall data...")
@@ -551,6 +554,7 @@ def main():
     parser = argparse.ArgumentParser(description='Monsoon Onset Reliability Analysis')
     parser.add_argument('--model_forecast_dir', required=True, help='Directory containing model forecast data')
     parser.add_argument('--imd_folder', required=True, help='Directory containing IMD rainfall data')
+    parser.add_argument('--mem_num', type=int, required=True, help='Number of ensemble members to use')
     parser.add_argument('--thres_file', required=True, help='Path to threshold NetCDF file')
     parser.add_argument('--max_forecast_day', type=int, default=15, help='Maximum forecast day (default: 15)')
     parser.add_argument('--save_path', required=True, help='Directory to save outputs')
@@ -584,7 +588,8 @@ def main():
         args.years, 
         args.model_forecast_dir, 
         args.imd_folder, 
-        args.thres_file, 
+        args.thres_file,
+        args.mem_num, 
         args.max_forecast_day, 
         day_bins, 
         mok=args.mok,

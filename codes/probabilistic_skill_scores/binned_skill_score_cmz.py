@@ -22,7 +22,7 @@ import glob
 
 
 
-def get_forecast_probabilistic_twice_weekly(yr, model_forecast_dir, date_filter_year = 2024, file_pattern='tp_4p0_{}.nc'):
+def get_forecast_probabilistic_twice_weekly(yr, model_forecast_dir, mem_num, date_filter_year = 2024, file_pattern='tp_4p0_{}.nc'):
     """
     Loads model precip data for twice-weekly initializations from May to July.
     """
@@ -61,6 +61,9 @@ def get_forecast_probabilistic_twice_weekly(yr, model_forecast_dir, date_filter_
         
     # Select only the matching initialization times
     ds = ds.sel(init_time=matching_times)
+    if "total_precipitation_24hr" in ds.data_vars:
+        ds = ds.rename({"total_precipitation_24hr": "tp"}) # For the quantile-mapped variable change the var name from total_precipitation_24hr to tp
+        ds = ds[['tp']]*1000  # Convert from m to mm
     if 'day' in ds.dims:
         if ds['day'][0].values == 0:
             ds = ds.sel(day=slice(1, None))
@@ -72,7 +75,7 @@ def get_forecast_probabilistic_twice_weekly(yr, model_forecast_dir, date_filter_
     if 'day' in ds.dims:        
         ds = ds.rename({'day': 'step'})
 
-    ds = ds.isel(member =slice(0, 50))  # limit to first 51 members (0-50)
+    ds = ds.isel(member =slice(0, mem_num))  # limit to first mem_num members (0-mem_num)
     p_model = ds['tp']  # in mm
     init_times = p_model.init_time.values
     ds.close()
@@ -518,7 +521,7 @@ def create_forecast_observation_pairs_with_bins(onset_all_members, onset_da, day
     return forecast_obs_df
 
 # This function creates the observed forecast pairs for multiple years (core monsoon zone grids) and combines them
-def multi_year_forecast_obs_pairs(years, model_forecast_dir, imd_folder, thres_file, max_forecast_day, day_bins, mok=True, date_filter_year=2024, file_pattern = '{}.nc'):
+def multi_year_forecast_obs_pairs(years, model_forecast_dir, imd_folder, thres_file, mem_num, max_forecast_day, day_bins, mok=True, date_filter_year=2024, file_pattern = '{}.nc'):
     """Main function to perform multi-year reliability analysis."""
     
     print(f"Processing years: {years}")
@@ -558,7 +561,7 @@ def multi_year_forecast_obs_pairs(years, model_forecast_dir, imd_folder, thres_f
         try:
             # Load model and observation data
             print("Loading S2S model data...")
-            p_model,_ = get_forecast_probabilistic_twice_weekly(year, model_forecast_dir, date_filter_year, file_pattern)
+            p_model,_ = get_forecast_probabilistic_twice_weekly(year, model_forecast_dir, mem_num, date_filter_year, file_pattern)
             p_model_slice = p_model.sel(lat=inside_lats, lon=inside_lons)
 
             print("Loading IMD rainfall data...")
@@ -1217,7 +1220,7 @@ def create_climatological_forecast_obs_pairs(clim_onset, target_year, init_dates
     
     return forecast_obs_df
 
-def multi_year_climatological_forecast_obs_pairs(clim_onset, target_years, day_bins, model_forecast_dir, date_filter_year=2024, file_pattern='tp_4p0_{}.nc', max_forecast_day=15, mok=True):
+def multi_year_climatological_forecast_obs_pairs(clim_onset, target_years, day_bins, mem_num, model_forecast_dir, date_filter_year=2024, file_pattern='tp_4p0_{}.nc', max_forecast_day=15, mok=True):
     """
     Create climatological forecast-observation pairs for multiple target years.
     
@@ -1269,7 +1272,7 @@ def multi_year_climatological_forecast_obs_pairs(clim_onset, target_years, day_b
         
         try:
             # Get initialization dates for this year
-            _,init_dates = get_forecast_probabilistic_twice_weekly(target_year, model_forecast_dir, date_filter_year, file_pattern)
+            _,init_dates = get_forecast_probabilistic_twice_weekly(target_year, model_forecast_dir, mem_num, date_filter_year, file_pattern)
             
             
             # Create forecast-observation pairs for this year
@@ -1667,6 +1670,8 @@ def parse_arguments():
                         help='Directory containing IMD rainfall data')
     parser.add_argument('--thres_file', type=str, required=True,
                         help='Path to threshold NetCDF file')
+    parser.add_argument('--mem_num', type=int, required=True,
+                        help='Number of ensemble members to use')
     parser.add_argument('--date_filter_year', type=int, default=2024,
                         help='Year to use for date filtering (default: 2024)')
     parser.add_argument('--file_pattern', type=str, default='{}.nc',
@@ -1675,6 +1680,8 @@ def parse_arguments():
                         help='Maximum forecast day (15 or 30, default: 30)')
     parser.add_argument('--model_name', type=str, required=True,
                         help='Model name for output files (e.g., gencast, fuxi)')
+    parser.add_argument('--save_dir', type=str, default=None,
+                        help='Directory to save output CSV and PNG files (default: current directory)')
     parser.add_argument('--mok', action='store_true', default=True,
                         help='Use MOK date filter (June 2nd) for onset detection (default: True)')
     parser.add_argument('--no_mok', action='store_false', dest='mok',
@@ -1707,8 +1714,45 @@ def get_target_bins(brier_forecast, brier_climatology):
     return sorted(target_bins, key=extract_day_range)
 
 def save_results(auc_forecast, brier_forecast, skill_results, rps_forecast,
-                auc_climatology, brier_climatology, model_name, max_forecast_day):
-    """Save overall and binned skill scores to CSV files"""
+                auc_climatology, brier_climatology, model_name, max_forecast_day, save_dir=None):
+    """
+    Save overall and binned skill scores to CSV files
+    
+    Parameters:
+    -----------
+    auc_forecast : dict
+        AUC results for forecast model
+    brier_forecast : dict
+        Brier score results for forecast model
+    skill_results : dict
+        Skill score results
+    rps_forecast : dict
+        RPS results for forecast model
+    auc_climatology : dict
+        AUC results for climatology
+    brier_climatology : dict
+        Brier score results for climatology
+    model_name : str
+        Name of the model for output filenames
+    max_forecast_day : int
+        Maximum forecast day (15 or 30)
+    save_dir : str, optional
+        Directory to save CSV files. If None, saves in current directory.
+        If directory doesn't exist, it will be created.
+    """
+    
+    # Handle save directory
+    if save_dir is not None:
+        # Create directory if it doesn't exist
+        os.makedirs(save_dir, exist_ok=True)
+        print(f"Results will be saved in: {save_dir}")
+        
+        # Ensure save_dir ends with a path separator for proper joining
+        if not save_dir.endswith(os.sep):
+            save_dir += os.sep
+    else:
+        save_dir = ""
+        print("Results will be saved in current directory")
     
     # Save overall scores
     overall_scores = {
@@ -1723,7 +1767,7 @@ def save_results(auc_forecast, brier_forecast, skill_results, rps_forecast,
     }
     
     overall_df = pd.DataFrame(overall_scores)
-    overall_filename = f'overall_skill_scores_{model_name}_{max_forecast_day}day.csv'
+    overall_filename = f'{save_dir}overall_skill_scores_{model_name}_{max_forecast_day}day.csv'
     overall_df.to_csv(overall_filename, index=False)
     print(f"Saved overall scores to '{overall_filename}'")
     print(overall_df)
@@ -1741,14 +1785,36 @@ def save_results(auc_forecast, brier_forecast, skill_results, rps_forecast,
     }
     
     binned_df = pd.DataFrame(binned_data)
-    binned_filename = f'binned_skill_scores_{model_name}_{max_forecast_day}day.csv'
+    binned_filename = f'{save_dir}binned_skill_scores_{model_name}_{max_forecast_day}day.csv'
     binned_df.to_csv(binned_filename, index=False)
     print(f"Saved binned scores to '{binned_filename}'")
     print(binned_df)
+    
+    return overall_filename, binned_filename
 
 def create_heatmap(skill_results, auc_forecast, auc_climatology, 
-                  brier_forecast, brier_climatology, model_name, max_forecast_day):
-    """Create and save skill score heatmap"""
+                  brier_forecast, brier_climatology, model_name, max_forecast_day, save_dir=None):
+    """
+    Create and save skill score heatmap
+    
+    Parameters:
+    -----------
+    ... (other parameters)
+    save_dir : str, optional
+        Directory to save the heatmap. If None, saves in current directory.
+        If directory doesn't exist, it will be created.
+    """
+    
+    # Handle save directory
+    if save_dir is not None:
+        # Create directory if it doesn't exist
+        os.makedirs(save_dir, exist_ok=True)
+        
+        # Ensure save_dir ends with a path separator for proper joining
+        if not save_dir.endswith(os.sep):
+            save_dir += os.sep
+    else:
+        save_dir = ""
     
     target_bins = get_target_bins(brier_forecast, brier_climatology)
     
@@ -1811,11 +1877,13 @@ def create_heatmap(skill_results, auc_forecast, auc_climatology,
     plt.tight_layout()
     
     # Save with model name and forecast days
-    figure_filename = f'skill_scores_heatmap_{model_name}_{max_forecast_day}day.png'
+    figure_filename = f'{save_dir}skill_scores_heatmap_{model_name}_{max_forecast_day}day.png'
     plt.savefig(figure_filename, dpi=300, bbox_inches='tight')
     plt.close()
     
     print(f"Figure saved as '{figure_filename}'")
+    
+    return figure_filename
 
 def main():
     """Main execution function"""
@@ -1837,16 +1905,20 @@ def main():
     print(f"Max forecast day: {args.max_forecast_day}")
     print(f"Day bins: {day_bins}")
     print(f"MOK filter: {args.mok} ({'June 2nd' if args.mok else 'May 1st'})")
+    if args.save_dir:
+        print(f"Output directory: {args.save_dir}")
+    else:
+        print("Output directory: current directory")
     print("="*60)
     
     # Process forecast model
     print("\n1. Processing forecast model...")
     forecast_obs_df = multi_year_forecast_obs_pairs(
-        args.years, args.model_forecast_dir, args.imd_folder, args.thres_file, 
+        args.years, args.model_forecast_dir, args.imd_folder, args.thres_file, args.mem_num,
         args.max_forecast_day, day_bins, 
         date_filter_year=args.date_filter_year, 
         file_pattern=args.file_pattern,
-        mok=args.mok  # Pass mok parameter
+        mok=args.mok
     )
     
     print("\n2. Calculating forecast scores...")
@@ -1859,16 +1931,16 @@ def main():
     thresh_ds = xr.open_dataset(args.thres_file)
     thresh_slice = thresh_ds['MWmean']
     clim_onset = compute_climatological_onset_dataset(
-        args.imd_folder, thresh_slice, years=None, mok=args.mok  # Pass mok parameter
+        args.imd_folder, thresh_slice, years=None, mok=args.mok
     )
     
     print("\n4. Processing climatological forecasts...")
     climatology_obs_df = multi_year_climatological_forecast_obs_pairs(
-        clim_onset, args.years, day_bins, args.model_forecast_dir, 
+        clim_onset, args.years, day_bins, args.mem_num, args.model_forecast_dir, 
         date_filter_year=args.date_filter_year, 
         file_pattern=args.file_pattern, 
         max_forecast_day=args.max_forecast_day, 
-        mok=args.mok  # Pass mok parameter
+        mok=args.mok
     )
     
     print("\n5. Calculating climatology scores...")
@@ -1885,25 +1957,27 @@ def main():
     
     # Save results
     print("\n7. Saving results...")
-    save_results(
+    overall_file, binned_file = save_results(
         auc_forecast, brier_forecast, skill_results, rps_forecast,
-        auc_climatology, brier_climatology, args.model_name, args.max_forecast_day
+        auc_climatology, brier_climatology, args.model_name, args.max_forecast_day,
+        save_dir=args.save_dir
     )
     
     # Create heatmap
     print("\n8. Creating heatmap...")
-    create_heatmap(
+    heatmap_file = create_heatmap(
         skill_results, auc_forecast, auc_climatology,
-        brier_forecast, brier_climatology, args.model_name, args.max_forecast_day
+        brier_forecast, brier_climatology, args.model_name, args.max_forecast_day,
+        save_dir=args.save_dir
     )
     
     print("\n" + "="*60)
     print("ANALYSIS COMPLETED SUCCESSFULLY!")
     print("="*60)
     print("Output files:")
-    print(f"- overall_skill_scores_{args.model_name}_{args.max_forecast_day}day.csv")
-    print(f"- binned_skill_scores_{args.model_name}_{args.max_forecast_day}day.csv")
-    print(f"- skill_scores_heatmap_{args.model_name}_{args.max_forecast_day}day.png")
+    print(f"- {overall_file}")
+    print(f"- {binned_file}")
+    print(f"- {heatmap_file}")
 
 if __name__ == "__main__":
     main()

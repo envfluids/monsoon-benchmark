@@ -4,3 +4,4 @@ model_forecast_data/*/
 **/output/
 .vscode/
 *.ipynb
+*.csv
