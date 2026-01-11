@@ -4,13 +4,6 @@
 
 This Python script (`binned_skill_score_cmz.py`) performs comprehensive probabilistic skill score analysis for monsoon onset forecasts, aggregated across the core monsoon zone grids, compared against IMD (India Meteorological Department) observations and climatological baselines.
 
-## Features
-
-- **Probabilistic Skill Assessment**: Evaluates forecast model performance using multiple metrics including Brier Score, Ranked Probability Score (RPS), and area under the Receiver Operating Characteristic curve (AUC)
-- **Climatological Comparison**: Computes skill scores relative to climatological forecasts treating ground turth of individual years avaialble as ensembles
-- **Core Monsoon Zone Analysis**: Focuses analysis on the Indian Core Monsoon Zone using predefined polygon coordinates
-- **Multi-Year Processing**: Handles multiple years of data for robust statistical analysis
-- **Binned Forecast Verification**: Organizes forecasts into 5-day bins bins
 
 ### Required Data Files
 1. **Model Data**: NetCDF files with precipitation forecasts
@@ -25,7 +18,7 @@ This Python script (`binned_skill_score_cmz.py`) performs comprehensive probabil
    - Dimensions: `lat`/`latitude`, `lon`/`longitude`, `time`/`TIME`
 
 3. **Threshold File**: NetCDF file with onset thresholds
-   - Mean wet spell threshold based on Moron and Robertson (2023). This file can be generated using `imd_onset_threshold.py` file
+   - Mean wet spell threshold based on Moron and Robertson. This file can be generated using `imd_onset_threshold.py` file
    - Variables: `MWmean` 
    - Dimensions: `lat`, `lon`
 
@@ -53,6 +46,10 @@ Forecasts are organized into day bins for verification:
 - **15-day forecasts**: [(1,5), (6,10), (11,15)]
 - **30-day forecasts**: [(1,5), (6,10), (11,15), (16,20), (21,25), (26,30)]
 
+### Extended Bins
+The analysis automatically includes additional bins:
+- **"Before initialization"**: For cases where onset occurs before forecast initialization
+- **"After day X"**: For cases where no onset is predicted within forecast window
 
 ### Probabilistic Approach
 - Ensemble members provide probability estimates for each time bin
@@ -82,11 +79,16 @@ Forecasts are organized into day bins for verification:
 
 ## Climatological Baseline
 
-### Construction Method
-1. **Historical Dataset**: Computes onset dates for all available years in IMD folder
-2. **Ensemble Approach**: Each historical year serves as an ensemble member
-3. **Day-of-Year Matching**: Uses Julian day comparisons for seasonal alignment
-4. **Probability Calculation**: Based on historical frequency of onset in each time bin
+**Automatic Detection**: Script automatically detects all available years in IMD folder
+
+**Historical Dataset**: Computes onset dates for all available years
+
+**Ensemble Approach**: Each historical year serves as an ensemble member
+
+**Day-of-Year Method**: Uses Julian day comparisons for seasonal alignment across years
+
+**Probability Calculation**: Based on historical frequency of onset in each time bin
+
 
 
 ## Usage
@@ -102,6 +104,7 @@ python binned_skill_score_cmz.py \
     --file_pattern "{}.nc" \
     --max_forecast_day 15 \
     --model_name abc \
+    --save_dir ./results \
     --mok
 ```
 
@@ -111,17 +114,21 @@ python binned_skill_score_cmz.py \
 - `--imd_folder`: Directory with IMD rainfall observations
 - `--thres_file`: Path to rainfall threshold NetCDF file
 - `--mem_num`: Number of ensemble members to use 
-- `file_pattern`: Naming convention of individual forecast file
+- `--file_pattern`: Naming convention of individual forecast file
 - `--max_forecast_day`: Maximum forecast horizon (15 or 30 days)
 - `--model_name`: Model identifier for output file naming
-- `--mok/--no_mok`: Enable/disable MOK date filter
+- `--save_dir`: Output directory for results (optional, defaults to current directory)
+- `--date_filter_year`: Year to use for filtering initialization dates (default: 2024; should be changed to 2023 for FuXi-S2S)
+- `--mok/--no_mok`: Enable/disable MOK date filter (default: enabled)
 
 ## Output Files
+
+The script generates three main output files in the specified save directory:
 
 ### 1. Overall Skill Scores CSV
 **Filename**: `overall_skill_scores_{model_name}_{max_forecast_day}day.csv`
 
-Contains:
+Contains aggregated metrics across all time bins:
 - AUC 
 - Fair Brier Score 
 - Fair Brier Skill Score (improvement over climatology)
@@ -131,18 +138,17 @@ Contains:
 ### 2. Binned Skill Scores CSV
 **Filename**: `binned_skill_scores_{model_name}_{max_forecast_day}day.csv`
 
-Contains bin-wise metrics:
+Contains bin-wise metrics for each forecast time window:
 - Fair Brier Skill Score for each time bin
 - AUC for each time bin
-- Fair Brier Scores (forecast and climatology)
+- Fair Brier Scores (forecast and climatology) for comparison
 
 ### 3. Skill Score Heatmap
 **Filename**: `skill_scores_heatmap_{model_name}_{max_forecast_day}day.png`
 
-Visual representation:
-- **Upper panel**: Brier Skill Score heatmap (%)
-- **Lower panel**: AUC values with climatological comparison
-
+Visual representation with two panels:
+- **Upper panel**: Brier Skill Score heatmap (%) 
+- **Lower panel**: AUC values with climatological comparison in parentheses
 
 ## Dependencies
 
@@ -158,4 +164,6 @@ argparse
 glob
 pathlib
 datetime
+os
+warnings
 ```
