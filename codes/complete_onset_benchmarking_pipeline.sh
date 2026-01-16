@@ -17,6 +17,8 @@ MODEL_FORECAST_DIR="${MODEL_FORECAST_DIR:-/path/to/model/forecast/data}"
 
 # Analysis parameters
 YEARS="2019 2020 2021 2022 2023 2024"
+DATE_FILTER_YEAR="${DATE_FILTER_YEAR:-2024}"  # Year to use for date filtering, change for FuXi-S2S
+
 MEM_NUM="${MEM_NUM:-50}"
 FILE_PATTERN="{}.nc"
 
@@ -71,6 +73,7 @@ python "${MAE_SCRIPT}" \
     --mem_num ${MEM_NUM} \
     --file_pattern "${FILE_PATTERN}" \
     --shpfile_path "${SHPFILE_PATH}" \
+    --date_filter_year "${DATE_FILTER_YEAR}" \
     --tolerance_days 3 \
     --verification_window 1 \
     --forecast_days 15 \
@@ -88,6 +91,7 @@ python "${MAE_SCRIPT}" \
     --mem_num ${MEM_NUM} \
     --file_pattern "${FILE_PATTERN}" \
     --shpfile_path "${SHPFILE_PATH}" \
+    --date_filter_year "${DATE_FILTER_YEAR}" \
     --tolerance_days 5 \
     --verification_window 16 \
     --forecast_days 30 \
@@ -106,6 +110,7 @@ python "${RELIABILITY_SCRIPT}" \
     --save_path "${OUTPUT_DIR}" \
     --years ${YEARS} \
     --file_pattern "${FILE_PATTERN}" \
+    --date_filter_year "${DATE_FILTER_YEAR}" \
     --mok
 
 echo "Step 4: Generating reliability diagrams for 30-day forecasts..."
@@ -118,9 +123,25 @@ python "${RELIABILITY_SCRIPT}" \
     --save_path "${OUTPUT_DIR}" \
     --years ${YEARS} \
     --file_pattern "${FILE_PATTERN}" \
+    --date_filter_year "${DATE_FILTER_YEAR}" \
     --mok
 
-echo "Step 5: Calculating probabilistic skill scores..."
+echo "Step 5: Calculating probabilistic skill scores...1-15 day"
+python "${SKILL_SCORE_SCRIPT}" \
+    --model_forecast_dir "${MODEL_FORECAST_DIR}" \
+    --imd_folder "${IMD_FOLDER}" \
+    --thres_file "${THRES_FILE}" \
+    --mem_num ${MEM_NUM} \
+    --max_forecast_day 15 \
+    --years ${YEARS} \
+    --file_pattern "${FILE_PATTERN}" \
+    --date_filter_year "${DATE_FILTER_YEAR}" \
+    --model_name "${MODEL_NAME}" \
+    --save_dir "${OUTPUT_DIR}" \
+    --mok
+
+
+echo "Step 6: Calculating probabilistic skill scores...1-30 day"
 python "${SKILL_SCORE_SCRIPT}" \
     --model_forecast_dir "${MODEL_FORECAST_DIR}" \
     --imd_folder "${IMD_FOLDER}" \
@@ -129,7 +150,7 @@ python "${SKILL_SCORE_SCRIPT}" \
     --max_forecast_day 30 \
     --years ${YEARS} \
     --file_pattern "${FILE_PATTERN}" \
-    --date_filter_year 2024 \
+    --date_filter_year "${DATE_FILTER_YEAR}" \
     --model_name "${MODEL_NAME}" \
     --save_dir "${OUTPUT_DIR}" \
     --mok

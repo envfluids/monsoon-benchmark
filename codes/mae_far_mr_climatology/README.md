@@ -46,6 +46,7 @@ pip install numpy xarray pandas matplotlib geopandas argparse pathlib
 | Argument | Default | Description | Typical Value | 
 |----------|---------|-------------|---------------|
 | `--tolerance_days` | 5 | Tolerance in days for onset prediction | 3 for 1-15 day; 5 for 16-30 day forecast |
+| `--date_filter_year` | 2024 | Year to use for filtering initialization dates | - |
 | `--verification_window` | 16 | Days after initialization to start validation window | 1 for 1-15 day; 16 for 16-30 day forecast |
 | `--forecast_days` | 30 | Length of forecast window in days | 15 for 1-15 day; 30 for 16-30 day forecast |
 | `--max_forecast_day` | 30 | Maximum forecast day to consider for onset | 15 for 1-15 day; 30 for 16-30 day forecast |
