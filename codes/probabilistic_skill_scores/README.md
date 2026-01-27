@@ -130,6 +130,7 @@ The script generates three main output files in the specified save directory:
 
 Contains aggregated metrics across all time bins:
 - AUC 
+- AUC of Climatology
 - Fair Brier Score 
 - Fair Brier Skill Score (improvement over climatology)
 - Fair RPS
@@ -140,7 +141,7 @@ Contains aggregated metrics across all time bins:
 
 Contains bin-wise metrics for each forecast time window:
 - Fair Brier Skill Score for each time bin
-- AUC for each time bin
+- AUC (forecast and climatology) for each time bin
 - Fair Brier Scores (forecast and climatology) for comparison
 
 ### 3. Skill Score Heatmap
