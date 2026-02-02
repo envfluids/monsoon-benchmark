@@ -8,10 +8,6 @@ The script implements the MR difination to calculate onset thresholds based on:
 - 5-day wet spell detection
 - April to October filtering 
 
-## Features
-
-- **Flexible Input Handling**: Automatically detects various coordinate and variable naming conventions (useful for different resolution input IMD files)
-- **Multi-file Support**: Processes multiple NetCDF files in a directory
 
 ## Requirements
 
@@ -85,13 +81,6 @@ The output file contains:
 - **Description**: Mean wet threshold for first wet spell detection
 - **Dimensions**: [lat, lon]
 
-### Metadata Attributes
-- `long_name`: Mean wet threshold
-- `units`: mm
-- `spatial_resolution_lat/lon`: Resolution in degrees
-- `algorithm_parameters`: Algorithm configuration used
-- `source_variable`: Original rainfall variable name
-
 
 
 ## Command Line Options
@@ -120,11 +109,7 @@ Processing completed successfully!
 Output file: mwset0p25x0p25.nc4
 ```
 
-## Technical Details
 
 ### Spatial Resolution Detection
 The script automatically detects spatial resolution by analyzing coordinate spacing and rounds to common resolutions (0.25°, 0.5°, 1.0°, etc.).
-
-### Memory Efficiency
-The script uses xarray's lazy loading capabilities to handle large datasets efficiently.
 
