@@ -58,6 +58,7 @@ pip install numpy xarray pandas matplotlib geopandas argparse pathlib
 | `--verification_window` | 1 | Days after initialization to start validation window | 1 for 1-15 day; 16 for 16-30 day forecast |
 | `--forecast_days` | 15 | Length of forecast window in days | 15 for 1-15 day; 30 for 16-30 day forecast |
 | `--max_forecast_day` | 15 | Maximum forecast day to consider for onset | 15 for 1-15 day; 30 for 16-30 day forecast |
+| `--date_filter_year` | int | Year to use for date filtering initialization dates | 2024 (change to 2022 for FuXi-S2S) | 
 | `--mok` | False | Use MOK date filter (June 2nd) - flag, no value needed | - |
 | `--output_file` | `spatial_metrics.nc` | Output NetCDF file name | -|
 | `--plot_dir` | None | Directory to save plot PNG file (optional) | - |
@@ -102,13 +103,6 @@ Variables:
     mean_mae(lat, lon): Mean MAE across all years (days)
     mae_YYYY(lat, lon): Individual MAE for year YYYY (days)
 
-Global Attributes:
-    title: "Monsoon Onset MAE, FAR, MR Analysis"
-    years: "[2019, 2020, 2021, ...]"
-    tolerance_days: 5
-    verification_window: 16
-    forecast_days: 30
-    mok_filter: 1 (0=False, 1=True)
 ```
 
 ### Plot File (Optional)
@@ -134,13 +128,14 @@ The script automatically detects grid resolution and defines CMZ polygon:
 ### Standard 1-15 Day Evaluation
 ```bash
 python mae_far_mr_probabilistic_models.py \
-    --years 2019 2020 2021 \
+    --years 2019 2020 2021 2022 2023 2024 \
     --model_forecast_dir ../../model_forecast_data/ngcm51/climatology/tp_2p0 \
     --imd_folder ../../imd_rainfall_data/2p0 \
     --thres_file ../../imd_onset_threshold/mwset2x2.nc4 \
     --mem_num 51 \
     --file_pattern '{}.nc' \
     --shpfile_path ../../ind_map_shpfile/india_shapefile.shp \
+    --date_filter_year 2024
     --tolerance_days 3 \
     --verification_window 1 \
     --forecast_days 15 \
@@ -185,39 +180,7 @@ python mae_far_mr_probabilistic_models.py \
     --output_file ./output/results_1-15day_noMOK.nc
 ```
 
-## Console Output
 
-The script provides comprehensive progress information:
-
-```
-Processing years: [2019, 2020, 2021]
-Model forecast data directory: /path/to/data
-...
-==================================================
-Processing year 2019
-==================================================
-Loading IMD rainfall from: /path/to/imd/data_2019.nc
-Using MOK date (June 2nd) as start date for onset detection
-Processing 26 init times x 9 lats x 11 lons...
-
-Processing Summary:
-Total potential initializations: 2574
-Skipped (no observed onset): 234
-Skipped (initialized after observed onset): 567
-Valid initializations processed: 1773
-Onsets found: 432
-Onset rate: 0.244
-
-=== CORE MONSOON ZONE (CMZ) AVERAGES ===
-CMZ Mean MAE (avg across years): 4.2 ± 0.8 days
-CMZ False Alarm Rate: 23.5 %
-CMZ Miss Rate: 31.2 %
-
-=== SUMMARY STATISTICS ===
-Mean MAE: 5.1 days
-Mean FAR: 28.3%
-Mean Miss Rate: 34.7%
-```
 
 ## Data Processing Notes
 
@@ -248,8 +211,3 @@ The `--mok` argument is a boolean flag:
 # To disable MOK filtering (False) 
 # (simply omit the --mok flag)
 ```
-
-
-## Script Files
-
-- `mae_far_mr_deterministic_models.py`: Main analysis script

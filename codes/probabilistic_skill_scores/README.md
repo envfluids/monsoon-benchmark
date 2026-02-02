@@ -118,7 +118,7 @@ python binned_skill_score_cmz.py \
 - `--max_forecast_day`: Maximum forecast horizon (15 or 30 days)
 - `--model_name`: Model identifier for output file naming
 - `--save_dir`: Output directory for results (optional, defaults to current directory)
-- `--date_filter_year`: Year to use for filtering initialization dates (default: 2024; should be changed to 2023 for FuXi-S2S)
+- `--date_filter_year`: Year to use for filtering initialization dates (default: 2024; should be changed to 2022 for FuXi-S2S)
 - `--mok/--no_mok`: Enable/disable MOK date filter (default: enabled)
 
 ## Output Files

@@ -90,7 +90,7 @@ python onset_reliability_diagram_cmz.py \
 | `--years` | list | Yes | - | Years to process (space-separated integers) |
 | `--max_forecast_day` | int | No | 15 | Maximum forecast day (15 for days 1-15 analysis or 30 for days 16-30 analysis) |
 | `--file_pattern` | str | No | `{}.nc` | File naming pattern for forecast files (single file per year) |
-| `--date_filter_year` | int | No | 2024 | Year to use for date filtering (default: 2024; Change to 2023 for FuXi) |
+| `--date_filter_year` | int | No | 2024 | Year to use for date filtering (default: 2024; Change to 2022 for FuXi) |
 | `--mok` | flag | No | True | Enable MOK filter (onset after June 2nd only) |
 | `--no-mok` | flag | No | False | Disable MOK filter (allow onset from May 1st) |
 
