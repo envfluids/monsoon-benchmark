@@ -12,8 +12,8 @@
 # =============================================================================
 
 # Model configuration
-MODEL_NAME="${MODEL_NAME:-your_model_name}"
-MODEL_FORECAST_DIR="${MODEL_FORECAST_DIR:-/path/to/model/forecast/data}"
+MODEL_NAME="${MODEL_NAME:-NeuralGCM}"  # Change to your model name
+MODEL_FORECAST_DIR="${MODEL_FORECAST_DIR:-./rainfall_4p0/${MODEL_NAME}}"
 
 # Analysis parameters
 YEARS="2019 2020 2021 2022 2023 2024"
@@ -23,15 +23,15 @@ MEM_NUM="${MEM_NUM:-50}"
 FILE_PATTERN="{}.nc"
 
 # Input data paths
-IMD_FOLDER="${IMD_FOLDER:-/path/to/imd/rainfall/data}"
-THRES_FILE="${THRES_FILE:-/path/to/onset/threshold/file.nc4}"
-SHPFILE_PATH="${SHPFILE_PATH:-/path/to/india/shapefile.shp}"
+IMD_FOLDER="${IMD_FOLDER:-./imd_rainfall_data_4p0}"
+THRES_FILE="${THRES_FILE:-./imd_rainfall_threshold_4p0/mwset4x4.nc4}"
+SHPFILE_PATH="${SHPFILE_PATH:-./ind_map_shpfile/india_shapefile.shp}"
 
 # Code paths
-BENCHMARK_CODE_DIR="${BENCHMARK_CODE_DIR:-/path/to/benchmark-dev}"
-MAE_SCRIPT="${MAE_SCRIPT:-${BENCHMARK_CODE_DIR}/metrics/monsoon/codes/mae_far_mr_probablistic_models/mae_far_mr_probabilistic_models.py}"
-RELIABILITY_SCRIPT="${RELIABILITY_SCRIPT:-${BENCHMARK_CODE_DIR}/metrics/monsoon/codes/realibility_diagram/onset_reliability_diagram_cmz.py}"
-SKILL_SCORE_SCRIPT="${SKILL_SCORE_SCRIPT:-${BENCHMARK_CODE_DIR}/metrics/monsoon/codes/probabilistic_skill_scores/binned_skill_score_cmz.py}"
+BENCHMARK_CODE_DIR="${BENCHMARK_CODE_DIR:-.}"
+MAE_SCRIPT="${MAE_SCRIPT:-${BENCHMARK_CODE_DIR}/codes/mae_far_mr_probablistic_models/mae_far_mr_probabilistic_models.py}"
+RELIABILITY_SCRIPT="${RELIABILITY_SCRIPT:-${BENCHMARK_CODE_DIR}/codes/realibility_diagram/onset_reliability_diagram_cmz.py}"
+SKILL_SCORE_SCRIPT="${SKILL_SCORE_SCRIPT:-${BENCHMARK_CODE_DIR}/codes/probabilistic_skill_scores/binned_skill_score_cmz.py}"
 
 # Output paths
 OUTPUT_DIR="${OUTPUT_DIR:-./output/${MODEL_NAME}}"
