@@ -8,7 +8,7 @@
 # =============================================================================
 
 # =============================================================================
-# CONFIGURATION - UPDATE THESE PATHS FOR YOUR SYSTEM
+# CONFIGURATION - UPDATE THESE PATHS FOR YOUR SYSTEM AS NEEDED
 # =============================================================================
 
 # Model configuration
