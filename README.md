@@ -151,7 +151,7 @@ For deeper configuration options and method descriptions, see:
 - `codes/probabilistic_skill_scores/README.md`
 - `codes/onset_threshold_imd/README.md`
 
-### Citation
+# Citation
 
 ```bibtex
 @misc{masiwal2026decisionorientedbenchmarkingtransformai,
