@@ -47,8 +47,6 @@ else
     MODEL_NAME="${BASE_MODEL_NAME}_${PERIOD}period"
 fi
 
-#MODEL_FORECAST_DIR="${MODEL_FORECAST_DIR:-/glade/derecho/scratch/marchakitus/monsoon/monsoon_paper/zenodo/rainfall_4p0/FuXi}"
-
 # Analysis parameters
 DATE_FILTER_YEAR="${DATE_FILTER_YEAR:-2024}" 
 
@@ -107,7 +105,7 @@ python "${MAE_SCRIPT}" \
     --forecast_days 15 \
     --max_forecast_day 15 \
     --mok \
-    --output_file "${OUTPUT_DIR}/results_${MODEL_NAME}_1_15_day_MOK.nc" \
+    --output_file "${OUTPUT_DIR}/results_${BASE_MODEL_NAME}_1_15_day_MOK.nc" \
     --plot_dir "${OUTPUT_DIR}"
 
 echo "Step 2: Running MAE/FAR/MR analysis for 16-30 day forecasts..."
@@ -122,7 +120,7 @@ python "${MAE_SCRIPT}" \
     --forecast_days 30 \
     --max_forecast_day 30 \
     --mok \
-    --output_file "${OUTPUT_DIR}/results_${MODEL_NAME}_16_30_day_MOK.nc" \
+    --output_file "${OUTPUT_DIR}/results_${BASE_MODEL_NAME}_16_30_day_MOK.nc" \
     --plot_dir "${OUTPUT_DIR}"
 
 echo "Pipeline completed successfully! Results saved in: ${OUTPUT_DIR}"
