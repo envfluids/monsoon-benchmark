@@ -62,8 +62,8 @@ SHPFILE_PATH="${SHPFILE_PATH:-./ind_map_shpfile/india_shapefile.shp}"
 
 # Code paths
 BENCHMARK_CODE_DIR="${BENCHMARK_CODE_DIR:-.}"
-MAE_SCRIPT="${MAE_SCRIPT:-${BENCHMARK_CODE_DIR}/codes/mae_far_mr_probablistic_models/mae_far_mr_probabilistic_models.py}"
-RELIABILITY_SCRIPT="${RELIABILITY_SCRIPT:-${BENCHMARK_CODE_DIR}/codes/realibility_diagram/onset_reliability_diagram_cmz.py}"
+MAE_SCRIPT="${MAE_SCRIPT:-${BENCHMARK_CODE_DIR}/codes/mae_far_mr_probabilistic_models/mae_far_mr_probabilistic_models.py}"
+RELIABILITY_SCRIPT="${RELIABILITY_SCRIPT:-${BENCHMARK_CODE_DIR}/codes/reliability_diagram/onset_reliability_diagram_cmz.py}"
 SKILL_SCORE_SCRIPT="${SKILL_SCORE_SCRIPT:-${BENCHMARK_CODE_DIR}/codes/probabilistic_skill_scores/binned_skill_score_cmz.py}"
 
 # Output paths

@@ -144,8 +144,8 @@ For deeper configuration options and method descriptions, see:
 
 - `codes/mae_far_mr_climatology/README.md`
 - `codes/mae_far_mr_deterministic_models/README.md`
-- `codes/mae_far_mr_probablistic_models/README.md`
-- `codes/realibility_diagram/README.md`
+- `codes/mae_far_mr_probabilistic_models/README.md`
+- `codes/reliability_diagram/README.md`
 - `codes/probabilistic_skill_scores/README.md`
 - `codes/onset_threshold_imd/README.md`
 
