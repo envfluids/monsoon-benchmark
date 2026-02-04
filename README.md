@@ -6,11 +6,9 @@ Benchmarking suite for Indian monsoon onset prediction across climatology, deter
 
 This repository is released alongside the preprint submitted to arXiv [`2602.03767`](https://arxiv.org/abs/2602.03767).
 
-```
-Title: Decision-oriented benchmarking to transform AI weather forecast access: Application to the Indian monsoon
-Authors: Rajat Masiwal, Colin Aitken, Adam Marchakitus, Mayank Gupta, Katherine Kowal, Hamid A. Pahlavan, Tyler Yang, Y. Qiang Sun, Michael Kremer, Amir Jina, William R. Boos, and Pedram Hassanzadeh
+**Title**: Decision-oriented benchmarking to transform AI weather forecast access: Application to the Indian monsoon  
+**Authors**: Rajat Masiwal, Colin Aitken, Adam Marchakitus, Mayank Gupta, Katherine Kowal, Hamid A. Pahlavan, Tyler Yang, Y. Qiang Sun, Michael Kremer, Amir Jina, William R. Boos, and Pedram Hassanzadeh  
 arXiv: 2602.03767
-```
 
 ## Data Availability
 All data used in this repository is publicly available on [Zenodo](https://doi.org/10.5281/zenodo.18407547). Once downloaded, the files can be moved into this repository following the structure outlined below.
