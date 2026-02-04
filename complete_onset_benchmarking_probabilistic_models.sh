@@ -8,30 +8,63 @@
 # =============================================================================
 
 # =============================================================================
-# CONFIGURATION - UPDATE THESE PATHS FOR YOUR SYSTEM
+# CONFIGURATION - UPDATE THESE PATHS FOR YOUR SYSTEM AS NEEDED
 # =============================================================================
 
 # Model configuration
-MODEL_NAME="${MODEL_NAME:-your_model_name}"
-MODEL_FORECAST_DIR="${MODEL_FORECAST_DIR:-/path/to/model/forecast/data}"
+BASE_MODEL_NAME="${BASE_MODEL_NAME:-NeuralGCM}"  # Change to your model name
+PERIOD="${PERIOD:-recent}"  # Options: recent, extended, common, full, custom
+CUSTOM_YEARS="${CUSTOM_YEARS:-}"  # Space-separated list of years for custom period
+
+MODEL_FORECAST_DIR="${MODEL_FORECAST_DIR:-./rainfall_4p0/${BASE_MODEL_NAME}}"
+
+# Set years based on period or custom input
+if [[ "${PERIOD}" == "custom" ]]; then
+    if [[ -z "${CUSTOM_YEARS}" ]]; then
+        echo "ERROR: CUSTOM_YEARS must be specified when PERIOD=custom"
+        echo "Example: PERIOD=custom CUSTOM_YEARS=\"2010 2011 2015 2020 2021\" ./script.sh"
+        exit 1
+    fi
+    YEARS="${CUSTOM_YEARS}"
+    MODEL_NAME="${BASE_MODEL_NAME}_customperiod"
+else
+    case "${PERIOD}" in
+        "recent")
+            YEARS="$(seq -s ' ' 2019 2024)"
+            ;;
+        "extended")
+            YEARS="$(seq -s ' ' 1965 1978) $(seq -s ' ' 2019 2024)"
+            ;;
+        "common")
+            YEARS="$(seq -s ' ' 2004 2021)"
+            ;;
+        "full")
+            YEARS="$(seq -s ' ' 1965 2024)"
+            ;;
+        *)
+            echo "ERROR: Invalid PERIOD '${PERIOD}'. Valid options: recent, extended, common, full, custom"
+            exit 1
+            ;;
+    esac
+    MODEL_NAME="${BASE_MODEL_NAME}_${PERIOD}period"
+fi
 
 # Analysis parameters
-YEARS="2019 2020 2021 2022 2023 2024"
 DATE_FILTER_YEAR="${DATE_FILTER_YEAR:-2024}"  # Year to use for date filtering, change for FuXi-S2S
 
 MEM_NUM="${MEM_NUM:-50}"
 FILE_PATTERN="{}.nc"
 
 # Input data paths
-IMD_FOLDER="${IMD_FOLDER:-/path/to/imd/rainfall/data}"
-THRES_FILE="${THRES_FILE:-/path/to/onset/threshold/file.nc4}"
-SHPFILE_PATH="${SHPFILE_PATH:-/path/to/india/shapefile.shp}"
+IMD_FOLDER="${IMD_FOLDER:-./imd_rainfall_data_4p0}"
+THRES_FILE="${THRES_FILE:-./imd_rainfall_threshold_4p0/mwset4x4.nc4}"
+SHPFILE_PATH="${SHPFILE_PATH:-./ind_map_shpfile/india_shapefile.shp}"
 
 # Code paths
-BENCHMARK_CODE_DIR="${BENCHMARK_CODE_DIR:-/path/to/benchmark-dev}"
-MAE_SCRIPT="${MAE_SCRIPT:-${BENCHMARK_CODE_DIR}/metrics/monsoon/codes/mae_far_mr_probablistic_models/mae_far_mr_probabilistic_models.py}"
-RELIABILITY_SCRIPT="${RELIABILITY_SCRIPT:-${BENCHMARK_CODE_DIR}/metrics/monsoon/codes/realibility_diagram/onset_reliability_diagram_cmz.py}"
-SKILL_SCORE_SCRIPT="${SKILL_SCORE_SCRIPT:-${BENCHMARK_CODE_DIR}/metrics/monsoon/codes/probabilistic_skill_scores/binned_skill_score_cmz.py}"
+BENCHMARK_CODE_DIR="${BENCHMARK_CODE_DIR:-.}"
+MAE_SCRIPT="${MAE_SCRIPT:-${BENCHMARK_CODE_DIR}/codes/mae_far_mr_probablistic_models/mae_far_mr_probabilistic_models.py}"
+RELIABILITY_SCRIPT="${RELIABILITY_SCRIPT:-${BENCHMARK_CODE_DIR}/codes/realibility_diagram/onset_reliability_diagram_cmz.py}"
+SKILL_SCORE_SCRIPT="${SKILL_SCORE_SCRIPT:-${BENCHMARK_CODE_DIR}/codes/probabilistic_skill_scores/binned_skill_score_cmz.py}"
 
 # Output paths
 OUTPUT_DIR="${OUTPUT_DIR:-./output/${MODEL_NAME}}"
@@ -48,7 +81,7 @@ check_variable() {
 }
 
 echo "Validating configuration..."
-check_variable "MODEL_NAME"
+check_variable "BASE_MODEL_NAME"
 check_variable "MODEL_FORECAST_DIR"
 check_variable "IMD_FOLDER"
 check_variable "THRES_FILE"
@@ -58,7 +91,7 @@ check_variable "BENCHMARK_CODE_DIR"
 # Create output directories
 mkdir -p "${OUTPUT_DIR}"
 
-echo "Configuration validated. Starting pipeline for model: ${MODEL_NAME}"
+echo "Configuration validated. Starting pipeline for model: ${BASE_MODEL_NAME}"
 
 # =============================================================================
 # PIPELINE EXECUTION
@@ -79,7 +112,7 @@ python "${MAE_SCRIPT}" \
     --forecast_days 15 \
     --max_forecast_day 15 \
     --mok \
-    --output_file "${OUTPUT_DIR}/results_${MODEL_NAME}_1_15_day_MOK.nc" \
+    --output_file "${OUTPUT_DIR}/results_${BASE_MODEL_NAME}_1_15_day_MOK.nc" \
     --plot_dir "${OUTPUT_DIR}"
 
 echo "Step 2: Running MAE/FAR/MR analysis for 16-30 day forecasts..."
@@ -97,7 +130,7 @@ python "${MAE_SCRIPT}" \
     --forecast_days 30 \
     --max_forecast_day 30 \
     --mok \
-    --output_file "${OUTPUT_DIR}/results_${MODEL_NAME}_16_30_day_MOK.nc" \
+    --output_file "${OUTPUT_DIR}/results_${BASE_MODEL_NAME}_16_30_day_MOK.nc" \
     --plot_dir "${OUTPUT_DIR}"
 
 echo "Step 3: Generating reliability diagrams for 15-day forecasts..."
@@ -136,7 +169,7 @@ python "${SKILL_SCORE_SCRIPT}" \
     --years ${YEARS} \
     --file_pattern "${FILE_PATTERN}" \
     --date_filter_year "${DATE_FILTER_YEAR}" \
-    --model_name "${MODEL_NAME}" \
+    --model_name "${BASE_MODEL_NAME}" \
     --save_dir "${OUTPUT_DIR}" \
     --mok
 
@@ -151,7 +184,7 @@ python "${SKILL_SCORE_SCRIPT}" \
     --years ${YEARS} \
     --file_pattern "${FILE_PATTERN}" \
     --date_filter_year "${DATE_FILTER_YEAR}" \
-    --model_name "${MODEL_NAME}" \
+    --model_name "${BASE_MODEL_NAME}" \
     --save_dir "${OUTPUT_DIR}" \
     --mok
 

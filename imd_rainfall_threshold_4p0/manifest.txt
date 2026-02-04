@@ -1,0 +1,5 @@
+imd_rainfall_threshold_4p0
+├── manifest.txt
+└── mwset4x4.nc4
+
+1 directory, 2 files
